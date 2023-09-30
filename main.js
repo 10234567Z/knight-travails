@@ -1,70 +1,78 @@
-function isSafe(x , y , sol){
-    return (x >= 0 && y >= 0 && x < 8 && y < 8 && sol[x][y] === -1)
+let grid = [];
+
+/** Make a grid array of board */
+for (let i = 0; i < 8; i++) {
+    grid.push([]);
+    for (let j = 0; j < 8; j++) {
+        grid[i].push('.');
+    }
 }
 
-function travailing(){
-    /** Make an empty arr */
-    let sol = []
+/** ALl possible 8 moves of knight */
+let xMove = [2, 1, -1, -2, -2, -1, 1, 2];
+let yMove = [1, 2, 2, 1, -1, -2, -2, -1];
 
-    /** Make an 8x8 grid with -1 all inputs */
-    for(let i = 0; i < 8; i++){
-        sol.push([])
-        for(let j = 0; j < 8; j++){
-            sol[i].push(-1)
+/** check if next move is empty/valid  */
+function isSafe(x, y) {
+    return x >= 0 && y >= 0 && x < 8 && y < 8 && grid[x][y] === '.';
+}
+
+/** Get the number of valid move the next moves have and returns the count */
+function getValidMoves(x, y) {
+    let count = 0;
+    for (let i = 0; i < 8; i++) {
+        let nextX = x + xMove[i];
+        let nextY = y + yMove[i];
+        if (isSafe(nextX, nextY)) {
+            count++;
         }
     }
-
-    /** Define all [x][y] axis moves that can be done by a knight in chess */
-    let xMove = [ 2, 1, -1, -2, -2, -1, 1, 2 ];
-    let yMove = [ 1, 2, 2, 1, -1, -2, -2, -1 ];
-
-    /** Make the initial move start from 0th cell/axis */
-    sol[0][0] = 0;
-
-    /** Print sol if solution exists*/
-    if(!traverseRec(0, 0 , 1 , sol , xMove , yMove)){
-        console.log('no solution')
-        return false
-    }
-    else{
-        console.log(sol);
-    }
-
+    return count;
 }
 
-function traverseRec(x , y , move , sol , xMove , yMove){
-    let k  , next_x , next_y;
-
-    /** If next move is 64 i.e 8x8 so return true and end the recursion , keeping this as base */
-    if(move === 64){
+function knightTravails(start, step = 1) {
+    /** If the its 1st step , to start from bottom to top index subtract startX index from 7 
+     * i.e maximum index of board on any side */
+    if(step === 1){
+        start[0] = 7 - start[0];
+    }
+    let [row, col] = start;
+    grid[row][col] = step;
+    if (step === 64) {
         return true;
     }
 
-    for(let k = 0; k < 8; k++){
+    /** This will save all possible next moves inside */
+    let nextMoves = [];
 
-        /** Trying all the moves inside x and y moves passed into function */
-        next_x = x + xMove[k];
-        next_y = y + yMove[k];
-
-        /** Checking if next move is safe i.e it returns true, if it is then make the next move cell value as current move like 1st move will become 1 of a[x][y] cell 
-        */
-        if(isSafe(next_x , next_y , sol)){
-            sol[next_x][next_y] = move;
-
-            /** Recurse through the traverseRec func by passing next cell indices while increasing moves everytimes it gets increased */
-            if(traverseRec(next_x , next_y , move + 1, sol , xMove , yMove)){
-                return true;
-            }
-            else{
-                /** Backtrack if next solution is invalid */
-                sol[next_x][next_y] = -1;
-            }
+    /** Checks if the next values have valid moves , if its not safe it wont put values of next moves of nextmove inside nextMoves array
+     * otherwise x y and number of valid moves go inside nextMoves array
+    */
+    for (let i = 0; i < 8; i++) {
+        let next = [row + xMove[i] , col + yMove[i]]
+        if (isSafe(next[0], next[1])) {
+            let validMoves = getValidMoves(next[0], next[1]);
+            nextMoves.push({ x: next[0], y: next[1], moves: validMoves });
         }
     }
-    return false
+
+    /** SOrt the next moves array based on number of moves */
+    nextMoves.sort((a, b) => a.moves - b.moves);
+
+    /** checks if the next recursion of knight travails function is false or if its the end */
+    for (let i = 0; i < 8; i++) {
+        let next = [nextMoves[i].x, nextMoves[i].y];
+        if (knightTravails(next, step + 1)) {
+            return true;
+        }
+    }
+    /** Backtracks and put the thing to previous value */
+    grid[row][col] = ".";
+    return false;
 }
 
-travailing();
-/**
- * connect [i , j] to i + 1 , i  , i - 1 for all the arrays
- */
+if (knightTravails([2, 3])) {
+    console.log(grid)
+} else {
+    console.log("No solution found.");
+}
