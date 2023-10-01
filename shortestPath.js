@@ -6,12 +6,17 @@ function isSafe(x, y) {
 }
 
 function knightTravails(start , end){
+
+    /** Make initial distance infinity for all cells and make initial start position 0 */
     let distances = new Array(8).fill(null).map(() => new Array(8).fill(Infinity))
+    start[0] = 7 - start[0];
+    end[0] = 7 - end[0];
     distances[start[0]][start[1]] = 0;
 
     let queue = [];
     queue.push({x:start[0] , y:start[1] , dist: 0});
 
+    /** if 1st element in queue is same position as target , construct path otherwise go to loop */
     while(queue.length > 0){
         queue.sort((a,b) => a.dist - b.dist);
         let current = queue.shift();
@@ -20,6 +25,8 @@ function knightTravails(start , end){
         }
         for(let i = 0 ; i < 8; i++){
             let next = [current.x + dx[i], current.y + dy[i]];
+
+            /** only if the current position distance++ is less than next move distance , push the new element inside queue and update the distance */
             if(isSafe(next[0] , next[1]) && current.dist + 1 < distances[next[0]][next[1]]){
                 distances[next[0]][next[1]] = current.dist + 1;
                 queue.push({x:next[0] , y:next[1] , dist: current.dist + 1})
@@ -31,6 +38,10 @@ function knightTravails(start , end){
 
 function constructPath(distances , start , end){
     let path = [end];
+
+    /** Construct a path by backtreacking from end path to start by checking if the next move pos distance from end (i.e current pos) is exactly 1 less than current position
+     * just like end distance = 4 , 2nd last before that would be 4 - 1 = 3 , backtracking like that until it reach the start and then return the reverse array
+     */
     while(end[0] !== start[0] || end[1] !== start[1]){
         for(let i = 0; i < 8 ; i++){
             let next = [end[0] + dx[i] , end[1] + dy[i]];
